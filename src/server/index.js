@@ -90,7 +90,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// API Routes
+// API Routes (using your existing api.js)
 app.use('/api', require('./routes/api'));
 
 // Default route
