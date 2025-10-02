@@ -3,6 +3,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const cors = require('cors');
+const { handleConnection, handleCallEvents, handlePeerDiscovery } = require('./socket/handlers');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -26,6 +28,15 @@ const activePeers = new Map();
 io.on('connection', (socket) => {
     console.log('Peer connected:', socket.id);
     activePeers.set(socket.id, socket);
+    
+    // Handle basic connection
+    handleConnection(socket, io);
+    
+    // Handle call-related events
+    handleCallEvents(socket, io);
+    
+    // Handle peer discovery
+    handlePeerDiscovery(socket, io);
     
     // Handle peer check
     socket.on('check-peer', (data, callback) => {
@@ -99,5 +110,6 @@ app.get('/', (req, res) => {
 
 // Start server
 server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Secure Comms Server running on port ${PORT}`);
+    console.log(`WebSocket server ready for peer connections`);
 });
