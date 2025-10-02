@@ -149,14 +149,35 @@ body {
     margin-right: 10px;
 }
 
+/* FIXED: Only animate the first line */
 .terminal-text {
     color: var(--primary);
-    animation: typing 2s steps(30) infinite;
+}
+
+.terminal-line:nth-child(1) .terminal-text {
+    animation: typing 3s steps(30) infinite;
 }
 
 @keyframes typing {
     0%, 100% { width: 0; }
     50% { width: 100%; }
+}
+
+/* FIXED: Make peer ID and status static and highlighted */
+#peerId {
+    color: var(--secondary) !important;
+    font-weight: bold !important;
+    text-decoration: underline !important;
+    cursor: pointer !important;
+    animation: none !important;
+    font-size: 1.1em;
+    text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+}
+
+#connectionStatus {
+    color: var(--warning) !important;
+    font-weight: bold !important;
+    animation: none !important;
 }
 
 /* Central Circle */
@@ -592,6 +613,39 @@ body {
 @keyframes scan {
     from { top: 0; }
     to { top: 100%; }
+}
+
+/* Connection Indicator */
+.connection-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 20, 25, 0.8);
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid var(--primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    z-index: 500;
+}
+
+.indicator-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--warning);
+    animation: pulse 2s infinite;
+}
+
+.indicator-dot.online {
+    background: var(--primary);
+}
+
+.indicator-dot.offline {
+    background: var(--danger);
 }
 
 /* Responsive */
