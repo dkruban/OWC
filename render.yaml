@@ -1,1 +1,12 @@
-
+services:
+  - type: web
+    name: secure-comms
+    env: node
+    repo: https://github.com/yourusername/secure-comms.git
+    rootDir: .
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
