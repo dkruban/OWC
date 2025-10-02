@@ -10,11 +10,13 @@ function initializeSocket() {
     socket.on('connect', () => {
         document.getElementById('peerId').textContent = socket.id;
         document.getElementById('connectionStatus').textContent = 'ONLINE';
+        updateConnectionIndicator('ONLINE');
         showStatus('CONNECTED TO SIGNALING SERVER', 'success');
     });
     
     socket.on('disconnect', () => {
         document.getElementById('connectionStatus').textContent = 'OFFLINE';
+        updateConnectionIndicator('OFFLINE');
         showStatus('DISCONNECTED FROM SERVER', 'error');
     });
     
