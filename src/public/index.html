@@ -24,7 +24,7 @@
             </div>
             <div class="terminal-line">
                 <span class="terminal-prompt">root@secure-comms:~$</span>
-                <span class="terminal-text">PEER ID: <span id="peerId">GENERATING...</span></span>
+                <span class="terminal-text">PEER ID: <span id="peerId" onclick="copyPeerId()" style="cursor: pointer; text-decoration: underline;">GENERATING...</span></span>
             </div>
             <div class="terminal-line">
                 <span class="terminal-prompt">root@secure-comms:~$</span>
@@ -108,9 +108,82 @@
     <audio id="localAudio" autoplay muted></audio>
     <audio id="remoteAudio" autoplay></audio>
     
+    <!-- Connection Status Indicator -->
+    <div class="connection-indicator" id="connectionIndicator">
+        <div class="indicator-dot" id="indicatorDot"></div>
+        <span id="indicatorText">CONNECTING...</span>
+    </div>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/app.js"></script>
     <script src="js/webrtc.js"></script>
     <script src="js/socket.js"></script>
+    
+    <style>
+        /* Additional styles for connection indicator */
+        .connection-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(15, 20, 25, 0.8);
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            z-index: 500;
+        }
+        
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--warning);
+            animation: pulse 2s infinite;
+        }
+        
+        .indicator-dot.online {
+            background: var(--primary);
+        }
+        
+        .indicator-dot.offline {
+            background: var(--danger);
+        }
+    </style>
+    
+    <script>
+        // Copy peer ID function
+        function copyPeerId() {
+            const peerId = document.getElementById('peerId').textContent;
+            if (peerId && peerId !== 'GENERATING...') {
+                navigator.clipboard.writeText(peerId);
+                showStatus('PEER ID COPIED', 'success');
+            }
+        }
+        
+        // Update connection indicator
+        function updateConnectionIndicator(status) {
+            const indicatorDot = document.getElementById('indicatorDot');
+            const indicatorText = document.getElementById('indicatorText');
+            
+            indicatorDot.className = 'indicator-dot';
+            
+            switch(status) {
+                case 'ONLINE':
+                    indicatorDot.classList.add('online');
+                    indicatorText.textContent = 'CONNECTED';
+                    break;
+                case 'OFFLINE':
+                    indicatorDot.classList.add('offline');
+                    indicatorText.textContent = 'DISCONNECTED';
+                    break;
+                default:
+                    indicatorText.textContent = 'CONNECTING...';
+            }
+        }
+    </script>
 </body>
 </html>
