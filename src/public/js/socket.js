@@ -6,62 +6,55 @@ function initializeSocket() {
     socket = io();
     webrtcManager = new WebRTCManager();
     
-    // Socket events
+    // When connected to server
     socket.on('connect', () => {
         document.getElementById('peerId').textContent = socket.id;
         document.getElementById('connectionStatus').textContent = 'ONLINE';
-        updateConnectionIndicator('ONLINE');
-        showStatus('CONNECTED TO SIGNALING SERVER', 'success');
+        console.log('🌐 Connected to server');
     });
     
-    socket.on('disconnect', () => {
-        document.getElementById('connectionStatus').textContent = 'OFFLINE';
-        updateConnectionIndicator('OFFLINE');
-        showStatus('DISCONNECTED FROM SERVER', 'error');
-    });
-    
+    // Incoming call
     socket.on('incoming-call', async (data) => {
+        console.log('📞 Incoming call from:', data.from);
         currentPeerId = data.from;
         document.getElementById('incomingNumber').textContent = data.from;
         document.getElementById('incomingCall').classList.add('active');
         
-        // Initialize WebRTC
+        // Initialize audio when receiving call
         await webrtcManager.initialize();
     });
     
+    // Call offer received
     socket.on('call-offer', async (data) => {
+        console.log('📞 Call offer received');
         await webrtcManager.createAnswer(data.offer);
     });
     
+    // Call answer received
     socket.on('call-answer', async (data) => {
+        console.log('📞 Call answer received');
         await webrtcManager.handleAnswer(data.answer);
     });
     
+    // ICE candidate received
     socket.on('ice-candidate', async (data) => {
+        console.log('📡 ICE candidate received');
         await webrtcManager.handleIceCandidate(data.candidate);
     });
     
+    // Call ended
     socket.on('call-ended', () => {
+        console.log('📞 Call ended');
         endCall();
-        showStatus('PEER ENDED CALL', 'success');
-    });
-    
-    socket.on('peer-unavailable', () => {
-        showStatus('PEER NOT AVAILABLE', 'error');
-        closeNumberModal();
     });
 }
 
+// Start call to someone
 function initiateConnection() {
     const targetPeerId = document.getElementById('numberInput').value.trim();
     
     if (!targetPeerId) {
-        showStatus('PLEASE ENTER PEER ID', 'error');
-        return;
-    }
-    
-    if (targetPeerId === socket.id) {
-        showStatus('CANNOT CALL YOURSELF', 'error');
+        alert('Please enter Peer ID');
         return;
     }
     
@@ -72,18 +65,17 @@ function initiateConnection() {
         if (response.online) {
             closeNumberModal();
             
-            // Initialize WebRTC and start call
+            // Initialize audio and start call
             const initialized = await webrtcManager.initialize();
             if (initialized) {
                 document.getElementById('callNumber').textContent = targetPeerId;
                 document.getElementById('callInterface').classList.add('active');
-                document.getElementById('callStatus').textContent = 'CONNECTING...';
                 
                 await webrtcManager.createOffer();
                 startCallTimer();
             }
         } else {
-            showStatus('PEER NOT FOUND', 'error');
+            alert('Peer not found');
         }
     });
 }
