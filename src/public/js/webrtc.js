@@ -40,25 +40,93 @@ class WebRTCManager {
             console.log('✅ Microphone access granted');
             console.log('📊 Audio tracks:', this.localStream.getAudioTracks().length);
             
+            // CRITICAL: Explicitly enable all audio tracks
+            this.localStream.getAudioTracks().forEach(track => {
+                track.enabled = true;
+                console.log('🎤 Audio track enabled:', track.label, 'enabled:', track.enabled);
+            });
+            
             // Set up local audio playback
             await this.setupLocalAudio();
             
             // Create peer connection
             this.createPeerConnection();
             
-            // Add audio tracks to peer connection
+            // Add audio tracks to peer connection with explicit enabling
             this.localStream.getTracks().forEach(track => {
-                console.log('📡 Adding audio track:', track.label);
+                console.log('📡 Adding audio track:', track.label, 'enabled:', track.enabled);
+                // Double-check track is enabled before adding
+                track.enabled = true;
                 this.peerConnection.addTrack(track, this.localStream);
             });
             
             // Set up audio visualization
             this.setupAudioVisualization();
             
+            // Verify tracks are enabled
+            this.verifyAudioTracks();
+            
             return true;
         } catch (error) {
             console.error('❌ Microphone access error:', error);
             this.showErrorMessage('Microphone access required: ' + error.message);
+            return false;
+        }
+    }
+
+    // NEW: Verify audio tracks are enabled
+    verifyAudioTracks() {
+        if (!this.localStream) {
+            console.error('❌ No local stream to verify');
+            return;
+        }
+        
+        const audioTracks = this.localStream.getAudioTracks();
+        console.log('🔍 Verifying', audioTracks.length, 'audio tracks...');
+        
+        audioTracks.forEach((track, index) => {
+            console.log(`Track ${index}:`, {
+                kind: track.kind,
+                label: track.label,
+                enabled: track.enabled,
+                muted: track.muted,
+                readyState: track.readyState
+            });
+            
+            // Force enable if not enabled
+            if (!track.enabled) {
+                console.warn('⚠️ Track was disabled, enabling now...');
+                track.enabled = true;
+                console.log('✅ Track enabled:', track.enabled);
+            }
+        });
+    }
+
+    // NEW: Force enable microphone track
+    ensureMicrophoneEnabled() {
+        if (!this.localStream) {
+            console.error('❌ No local stream');
+            return false;
+        }
+        
+        const audioTracks = this.localStream.getAudioTracks();
+        if (audioTracks.length === 0) {
+            console.error('❌ No audio tracks found');
+            return false;
+        }
+        
+        const audioTrack = audioTracks[0];
+        console.log('🎤 Ensuring microphone is enabled...');
+        
+        // Force enable the track
+        audioTrack.enabled = true;
+        
+        // Verify it's enabled
+        if (audioTrack.enabled) {
+            console.log('✅ Microphone track is enabled');
+            return true;
+        } else {
+            console.error('❌ Failed to enable microphone track');
             return false;
         }
     }
@@ -131,6 +199,8 @@ class WebRTCManager {
         if (remoteAudio && this.remoteStream) {
             try {
                 remoteAudio.srcObject = this.remoteStream;
+                // Ensure remote audio is not muted
+                remoteAudio.muted = false;
                 // Force play remote audio
                 await remoteAudio.play();
                 console.log('🔊 Remote audio setup complete');
@@ -148,6 +218,9 @@ class WebRTCManager {
     async forcePlayRemoteAudio() {
         const remoteAudio = document.getElementById('remoteAudio');
         if (remoteAudio) {
+            // Ensure remote audio is not muted
+            remoteAudio.muted = false;
+            
             // Create user interaction to enable audio
             const playPromise = remoteAudio.play();
             if (playPromise !== undefined) {
@@ -157,6 +230,7 @@ class WebRTCManager {
                     console.log('🔄 Auto-play prevented, will play on user interaction');
                     // Add click listener to start audio
                     document.addEventListener('click', () => {
+                        remoteAudio.muted = false;
                         remoteAudio.play();
                     }, { once: true });
                 });
@@ -249,6 +323,9 @@ class WebRTCManager {
         document.getElementById('peerName').textContent = 'CONNECTED';
         showStatus('📞 Voice Call Connected', 'success');
         
+        // CRITICAL: Ensure microphone is enabled when connection is established
+        this.ensureMicrophoneEnabled();
+        
         // Test audio with a beep
         this.playTestTone();
     }
@@ -283,6 +360,9 @@ class WebRTCManager {
         this.isInitiator = true;
         console.log('📞 Creating call offer...');
         
+        // Ensure microphone is enabled before creating offer
+        this.ensureMicrophoneEnabled();
+        
         try {
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
@@ -302,6 +382,9 @@ class WebRTCManager {
     async createAnswer(offer) {
         this.isInitiator = false;
         console.log('📞 Creating call answer...');
+        
+        // Ensure microphone is enabled before creating answer
+        this.ensureMicrophoneEnabled();
         
         try {
             await this.peerConnection.setRemoteDescription(offer);
@@ -326,6 +409,9 @@ class WebRTCManager {
         try {
             await this.peerConnection.setRemoteDescription(answer);
             console.log('✅ Remote description set');
+            
+            // Ensure microphone is enabled after answer
+            this.ensureMicrophoneEnabled();
         } catch (error) {
             console.error('❌ Error handling answer:', error);
         }
