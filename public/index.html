@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE COMMS | ENCRYPTED CHANNEL</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Matrix Rain Background -->
+    <canvas id="matrix-rain"></canvas>
+    
+    <!-- Scanner Effect -->
+    <div class="scanner"></div>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+            <div class="terminal-line">
+                <span class="terminal-prompt">root@secure-comms:~$</span>
+                <span class="terminal-text">INITIALIZING ENCRYPTED CHANNEL...</span>
+            </div>
+            <div class="terminal-line">
+                <span class="terminal-prompt">root@secure-comms:~$</span>
+                <span class="terminal-text">PEER ID: <span id="peerId">GENERATING...</span></span>
+            </div>
+            <div class="terminal-line">
+                <span class="terminal-prompt">root@secure-comms:~$</span>
+                <span class="terminal-text">STATUS: <span id="connectionStatus">DISCONNECTED</span></span>
+            </div>
+        </div>
+        
+        <!-- Central Circle -->
+        <div class="central-circle" onclick="openNumberModal()">
+            <div class="circle-inner">
+                <div class="rotating-ring"></div>
+                <div class="circle-text">INITIATE</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Number Input Modal -->
+    <div class="number-modal" id="numberModal">
+        <div class="modal-content">
+            <div class="modal-title">ENTER TARGET PEER ID</div>
+            <input type="text" class="number-input" id="numberInput" placeholder="PEER ID" maxlength="20">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeNumberModal()">CANCEL</button>
+                <button class="modal-btn" onclick="initiateConnection()">CONNECT</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call Interface -->
+    <div class="call-interface" id="callInterface">
+        <div class="call-header">
+            <div class="call-status" id="callStatus">CONNECTING...</div>
+            <div class="call-number" id="callNumber">PEER ID</div>
+            <div class="call-timer" id="callTimer">00:00</div>
+        </div>
+        
+        <div class="call-visualizer">
+            <div class="visualizer-circle"></div>
+            <div class="visualizer-circle"></div>
+            <div class="visualizer-circle"></div>
+            <div class="waveform" id="waveform">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+            </div>
+        </div>
+        
+        <div class="call-controls">
+            <button class="call-btn mute" onclick="toggleMute()">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="call-btn speaker" onclick="toggleSpeaker()">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <button class="call-btn end" onclick="endCall()">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Incoming Call Notification -->
+    <div class="incoming-call" id="incomingCall">
+        <div class="incoming-title">INCOMING TRANSMISSION</div>
+        <div class="incoming-number" id="incomingNumber">PEER ID</div>
+        <div class="incoming-buttons">
+            <button class="incoming-btn accept" onclick="acceptIncomingCall()">ACCEPT</button>
+            <button class="incoming-btn decline" onclick="declineIncomingCall()">DECLINE</button>
+        </div>
+    </div>
+    
+    <!-- Status Message -->
+    <div class="status-message" id="statusMessage"></div>
+    
+    <!-- Audio Elements -->
+    <audio id="localAudio" autoplay muted></audio>
+    <audio id="remoteAudio" autoplay></audio>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/webrtc.js"></script>
+    <script src="js/socket.js"></script>
+</body>
+</html>
