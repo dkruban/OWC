@@ -1,105 +1,215 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path');
-const cors = require('cors');
-
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Store active peers
-const activePeers = new Map();
-
-// Socket connection handling
-io.on('connection', (socket) => {
-    console.log('Peer connected:', socket.id);
-    activePeers.set(socket.id, socket);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE COMMS | ENCRYPTED CHANNEL</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Matrix Rain Background -->
+    <canvas id="matrix-rain"></canvas>
     
-    // Handle peer check
-    socket.on('check-peer', (data, callback) => {
-        const peer = activePeers.get(data.peerId);
-        callback({ online: !!peer });
-    });
+    <!-- Scanner Effect -->
+    <div class="scanner"></div>
     
-    // Handle call offer
-    socket.on('call-offer', (data) => {
-        const targetPeer = activePeers.get(data.to);
-        if (targetPeer) {
-            targetPeer.emit('incoming-call', {
-                from: data.from,
-                offer: data.offer
-            });
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Terminal Header -->
+        <div class="terminal-header">
+            <div class="terminal-line">
+                <span class="terminal-prompt">root@secure-comms:~$</span>
+                <span class="terminal-text">INITIALIZING ENCRYPTED CHANNEL...</span>
+            </div>
+            <div class="terminal-line">
+                <span class="terminal-prompt">root@secure-comms:~$</span>
+                <span class="terminal-text">PEER ID: <span id="peerId" onclick="copyPeerId()" style="cursor: pointer; text-decoration: underline;">GENERATING...</span></span>
+            </div>
+            <div class="terminal-line">
+                <span class="terminal-prompt">root@secure-comms:~$</span>
+                <span class="terminal-text">STATUS: <span id="connectionStatus">DISCONNECTED</span></span>
+            </div>
+        </div>
+        
+        <!-- Central Circle -->
+        <div class="central-circle" onclick="openNumberModal()">
+            <div class="circle-inner">
+                <div class="rotating-ring"></div>
+                <div class="circle-text">INITIATE</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Number Input Modal -->
+    <div class="number-modal" id="numberModal">
+        <div class="modal-content">
+            <div class="modal-title">ENTER TARGET PEER ID</div>
+            <input type="text" class="number-input" id="numberInput" placeholder="PEER ID" maxlength="20">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeNumberModal()">CANCEL</button>
+                <button class="modal-btn" onclick="initiateConnection()">CONNECT</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call Interface -->
+    <div class="call-interface" id="callInterface">
+        <div class="call-header">
+            <div class="call-status" id="callStatus">CONNECTING...</div>
+            <div class="call-number" id="callNumber">PEER ID</div>
+            <div class="call-timer" id="callTimer">00:00</div>
+        </div>
+        
+        <div class="call-visualizer">
+            <div class="visualizer-circle"></div>
+            <div class="visualizer-circle"></div>
+            <div class="visualizer-circle"></div>
+            <div class="waveform" id="waveform">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+            </div>
+        </div>
+        
+        <div class="call-controls">
+            <button class="call-btn mute" onclick="toggleMute()">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="call-btn speaker" onclick="toggleSpeaker()">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <button class="call-btn end" onclick="endCall()">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Incoming Call Notification -->
+    <div class="incoming-call" id="incomingCall">
+        <div class="incoming-title">INCOMING TRANSMISSION</div>
+        <div class="incoming-number" id="incomingNumber">PEER ID</div>
+        <div class="incoming-buttons">
+            <button class="incoming-btn accept" onclick="acceptIncomingCall()">ACCEPT</button>
+            <button class="incoming-btn decline" onclick="declineIncomingCall()">DECLINE</button>
+        </div>
+    </div>
+    
+    <!-- Status Message -->
+    <div class="status-message" id="statusMessage"></div>
+    
+    <!-- Audio Elements -->
+    <audio id="localAudio" autoplay muted playsinline></audio>
+    <audio id="remoteAudio" autoplay playsinline></audio>
+    
+    <!-- Connection Status Indicator -->
+    <div class="connection-indicator" id="connectionIndicator">
+        <div class="indicator-dot" id="indicatorDot"></div>
+        <span id="indicatorText">CONNECTING...</span>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/webrtc.js"></script>
+    <script src="js/socket.js"></script>
+    
+    <style>
+        /* Additional styles for connection indicator */
+        .connection-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(15, 20, 25, 0.8);
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            z-index: 500;
         }
-    });
-    
-    // Handle call answer
-    socket.on('call-answer', (data) => {
-        const targetPeer = activePeers.get(data.to);
-        if (targetPeer) {
-            targetPeer.emit('call-answer', {
-                from: data.from,
-                answer: data.answer
-            });
+        
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--warning);
+            animation: pulse 2s infinite;
         }
-    });
-    
-    // Handle ICE candidates
-    socket.on('ice-candidate', (data) => {
-        const targetPeer = activePeers.get(data.to);
-        if (targetPeer) {
-            targetPeer.emit('ice-candidate', {
-                from: socket.id,
-                candidate: data.candidate
-            });
+        
+        .indicator-dot.online {
+            background: var(--primary);
         }
-    });
-    
-    // Handle call end
-    socket.on('end-call', (data) => {
-        const targetPeer = activePeers.get(data.to);
-        if (targetPeer) {
-            targetPeer.emit('call-ended');
+        
+        .indicator-dot.offline {
+            background: var(--danger);
         }
-    });
+    </style>
     
-    // Handle call decline
-    socket.on('decline-call', (data) => {
-        const targetPeer = activePeers.get(data.to);
-        if (targetPeer) {
-            targetPeer.emit('call-declined');
+    <script>
+        // Copy peer ID function
+        function copyPeerId() {
+            const peerId = document.getElementById('peerId').textContent;
+            if (peerId && peerId !== 'GENERATING...') {
+                navigator.clipboard.writeText(peerId);
+                showStatus('PEER ID COPIED', 'success');
+            }
         }
-    });
-    
-    // Handle disconnect
-    socket.on('disconnect', () => {
-        console.log('Peer disconnected:', socket.id);
-        activePeers.delete(socket.id);
-    });
-});
-
-// API Routes (using your existing api.js)
-app.use('/api', require('./routes/api'));
-
-// Default route
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
-// Start server
-server.listen(PORT, () => {
-    console.log(`Secure Comms Server running on port ${PORT}`);
-    console.log(`WebSocket server ready for peer connections`);
-});
+        
+        // Update connection indicator
+        function updateConnectionIndicator(status) {
+            const indicatorDot = document.getElementById('indicatorDot');
+            const indicatorText = document.getElementById('indicatorText');
+            
+            indicatorDot.className = 'indicator-dot';
+            
+            switch(status) {
+                case 'ONLINE':
+                    indicatorDot.classList.add('online');
+                    indicatorText.textContent = 'CONNECTED';
+                    break;
+                case 'OFFLINE':
+                    indicatorDot.classList.add('offline');
+                    indicatorText.textContent = 'DISCONNECTED';
+                    break;
+                default:
+                    indicatorText.textContent = 'CONNECTING...';
+            }
+        }
+        
+        // Debug script to check if all functions are defined
+        console.log('Checking if functions are defined...');
+        console.log('openNumberModal:', typeof openNumberModal);
+        console.log('closeNumberModal:', typeof closeNumberModal);
+        console.log('initiateConnection:', typeof initiateConnection);
+        console.log('copyPeerId:', typeof copyPeerId);
+        console.log('updateConnectionIndicator:', typeof updateConnectionIndicator);
+        
+        // Test if socket is connecting
+        setTimeout(() => {
+            const peerId = document.getElementById('peerId').textContent;
+            const status = document.getElementById('connectionStatus').textContent;
+            console.log('Peer ID after 3 seconds:', peerId);
+            console.log('Status after 3 seconds:', status);
+            
+            if (peerId === 'GENERATING...') {
+                console.error('Peer ID not generated - Socket.io not connecting');
+                // Try to manually initialize
+                if (typeof initializeSocket === 'function') {
+                    initializeSocket();
+                } else {
+                    console.error('initializeSocket function not found');
+                }
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
