@@ -104,7 +104,7 @@
     <!-- Status Message -->
     <div class="status-message" id="statusMessage"></div>
     
-    <!-- Audio Elements -->
+    <!-- Audio Elements - UPDATED with playsinline attribute -->
     <audio id="localAudio" autoplay muted playsinline></audio>
     <audio id="remoteAudio" autoplay playsinline></audio>
     
@@ -184,32 +184,6 @@
                     indicatorText.textContent = 'CONNECTING...';
             }
         }
-        
-        // Debug script to check if all functions are defined
-        console.log('Checking if functions are defined...');
-        console.log('openNumberModal:', typeof openNumberModal);
-        console.log('closeNumberModal:', typeof closeNumberModal);
-        console.log('initiateConnection:', typeof initiateConnection);
-        console.log('copyPeerId:', typeof copyPeerId);
-        console.log('updateConnectionIndicator:', typeof updateConnectionIndicator);
-        
-        // Test if socket is connecting
-        setTimeout(() => {
-            const peerId = document.getElementById('peerId').textContent;
-            const status = document.getElementById('connectionStatus').textContent;
-            console.log('Peer ID after 3 seconds:', peerId);
-            console.log('Status after 3 seconds:', status);
-            
-            if (peerId === 'GENERATING...') {
-                console.error('Peer ID not generated - Socket.io not connecting');
-                // Try to manually initialize
-                if (typeof initializeSocket === 'function') {
-                    initializeSocket();
-                } else {
-                    console.error('initializeSocket function not found');
-                }
-            }
-        }, 3000);
     </script>
 </body>
 </html>
