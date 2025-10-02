@@ -1,0 +1,616 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #00ff41;
+    --secondary: #00d4ff;
+    --danger: #ff0040;
+    --warning: #ffaa00;
+    --dark: #0a0a0a;
+    --darker: #050505;
+    --light: #1a1a1a;
+    --terminal: #0f1419;
+}
+
+body {
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--darker);
+    color: var(--primary);
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Matrix Rain Background */
+#matrix-rain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+/* Glitch Effect */
+.glitch {
+    position: relative;
+    color: var(--primary);
+    font-size: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
+                -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
+                0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+    animation: glitch 500ms infinite;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    animation: glitch-1 0.5s infinite;
+    color: var(--danger);
+    z-index: -1;
+}
+
+.glitch::after {
+    animation: glitch-2 0.5s infinite;
+    color: var(--secondary);
+    z-index: -2;
+}
+
+@keyframes glitch {
+    0%, 100% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
+                               -0.05em -0.025em 0 rgba(0, 255, 0, 0.75),
+                               0.025em 0.05em 0 rgba(0, 0, 255, 0.75); }
+    14% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
+                          -0.05em -0.025em 0 rgba(0, 255, 0, 0.75),
+                          0.025em 0.05em 0 rgba(0, 0, 255, 0.75); }
+    15% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
+                          0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
+                          -0.05em -0.05em 0 rgba(0, 0, 255, 0.75); }
+    49% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
+                          0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
+                          -0.05em -0.05em 0 rgba(0, 0, 255, 0.75); }
+    50% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75),
+                          0.05em 0 0 rgba(0, 255, 0, 0.75),
+                          0 -0.05em 0 rgba(0, 0, 255, 0.75); }
+    99% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75),
+                          0.05em 0 0 rgba(0, 255, 0, 0.75),
+                          0 -0.05em 0 rgba(0, 0, 255, 0.75); }
+}
+
+@keyframes glitch-1 {
+    0%, 100% { clip: rect(132px, 350px, 101px, 30px); }
+    20% { clip: rect(33px, 350px, 86px, 30px); }
+    40% { clip: rect(92px, 350px, 27px, 30px); }
+    60% { clip: rect(55px, 350px, 119px, 30px); }
+    80% { clip: rect(21px, 350px, 67px, 30px); }
+}
+
+@keyframes glitch-2 {
+    0%, 100% { clip: rect(65px, 350px, 119px, 30px); }
+    20% { clip: rect(95px, 350px, 41px, 30px); }
+    40% { clip: rect(18px, 350px, 88px, 30px); }
+    60% { clip: rect(76px, 350px, 23px, 30px); }
+    80% { clip: rect(42px, 350px, 67px, 30px); }
+}
+
+/* Main Container */
+.main-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Terminal Header */
+.terminal-header {
+    position: absolute;
+    top: 20px;
+    width: 90%;
+    max-width: 800px;
+    background: var(--terminal);
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+}
+
+.terminal-line {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.terminal-prompt {
+    color: var(--secondary);
+    margin-right: 10px;
+}
+
+.terminal-text {
+    color: var(--primary);
+    animation: typing 2s steps(30) infinite;
+}
+
+@keyframes typing {
+    0%, 100% { width: 0; }
+    50% { width: 100%; }
+}
+
+/* Central Circle */
+.central-circle {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--light) 0%, var(--dark) 70%);
+    border: 2px solid var(--primary);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 50px rgba(0, 255, 65, 0.5),
+                inset 0 0 50px rgba(0, 255, 65, 0.1);
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 20px rgba(0, 255, 65, 0.5), inset 0 0 20px rgba(0, 255, 65, 0.1); }
+    50% { box-shadow: 0 0 40px rgba(0, 255, 65, 0.8), inset 0 0 40px rgba(0, 255, 65, 0.2); }
+    100% { box-shadow: 0 0 20px rgba(0, 255, 65, 0.5), inset 0 0 20px rgba(0, 255, 65, 0.1); }
+}
+
+.central-circle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 80px rgba(0, 255, 65, 0.8),
+                inset 0 0 80px rgba(0, 255, 65, 0.3);
+}
+
+.circle-inner {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    border: 1px solid var(--secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.circle-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    z-index: 2;
+}
+
+.rotating-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px dashed var(--primary);
+    border-radius: 50%;
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Number Input Modal */
+.number-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 5, 5, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(5px);
+}
+
+.number-modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--terminal);
+    border: 1px solid var(--primary);
+    border-radius: 10px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+    animation: modalAppear 0.3s ease;
+}
+
+@keyframes modalAppear {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--secondary);
+}
+
+.number-input {
+    width: 100%;
+    padding: 15px;
+    background: var(--dark);
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    color: var(--primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: 3px;
+}
+
+.number-input:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    color: var(--primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-btn:hover {
+    background: var(--primary);
+    color: var(--dark);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+}
+
+.modal-btn.cancel {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.modal-btn.cancel:hover {
+    background: var(--danger);
+    color: var(--dark);
+    box-shadow: 0 0 15px rgba(255, 0, 64, 0.5);
+}
+
+/* Call Interface */
+.call-interface {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--darker);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.call-interface.active {
+    display: flex;
+}
+
+.call-header {
+    position: absolute;
+    top: 30px;
+    text-align: center;
+}
+
+.call-status {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: var(--secondary);
+}
+
+.call-number {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--primary);
+}
+
+.call-timer {
+    font-size: 18px;
+    margin-top: 10px;
+    color: var(--warning);
+}
+
+.call-visualizer {
+    width: 300px;
+    height: 300px;
+    position: relative;
+    margin: 50px 0;
+}
+
+.visualizer-circle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    animation: pulse 1.5s infinite;
+}
+
+.visualizer-circle:nth-child(2) {
+    animation-delay: 0.5s;
+    border-color: var(--secondary);
+}
+
+.visualizer-circle:nth-child(3) {
+    animation-delay: 1s;
+    border-color: var(--warning);
+}
+
+.waveform {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.wave-bar {
+    width: 4px;
+    background: var(--primary);
+    animation: wave 1s infinite ease-in-out;
+}
+
+.wave-bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+.wave-bar:nth-child(2) { height: 40px; animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { height: 60px; animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { height: 80px; animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { height: 100px; animation-delay: 0.4s; }
+.wave-bar:nth-child(6) { height: 80px; animation-delay: 0.5s; }
+.wave-bar:nth-child(7) { height: 60px; animation-delay: 0.6s; }
+.wave-bar:nth-child(8) { height: 40px; animation-delay: 0.7s; }
+.wave-bar:nth-child(9) { height: 20px; animation-delay: 0.8s; }
+
+@keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.5); }
+}
+
+.call-controls {
+    display: flex;
+    gap: 30px;
+}
+
+.call-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.call-btn.mute {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.call-btn.mute:hover {
+    background: var(--warning);
+    color: var(--dark);
+    box-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
+}
+
+.call-btn.end {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.call-btn.end:hover {
+    background: var(--danger);
+    color: var(--dark);
+    box-shadow: 0 0 20px rgba(255, 0, 64, 0.5);
+}
+
+/* Incoming Call Notification */
+.incoming-call {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: var(--terminal);
+    border: 2px solid var(--secondary);
+    border-radius: 10px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    z-index: 300;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    transition: transform 0.3s ease;
+}
+
+.incoming-call.active {
+    transform: translate(-50%, -50%) scale(1);
+    animation: ring 0.5s infinite;
+}
+
+@keyframes ring {
+    0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    25% { transform: translate(-50%, -50%) scale(1.05) rotate(2deg); }
+    75% { transform: translate(-50%, -50%) scale(1.05) rotate(-2deg); }
+}
+
+.incoming-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: var(--secondary);
+}
+
+.incoming-number {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    letter-spacing: 3px;
+    color: var(--primary);
+}
+
+.incoming-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.incoming-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.incoming-btn.accept {
+    background: var(--primary);
+    color: var(--dark);
+}
+
+.incoming-btn.accept:hover {
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+}
+
+.incoming-btn.decline {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.incoming-btn.decline:hover {
+    box-shadow: 0 0 20px rgba(255, 0, 64, 0.5);
+}
+
+/* Status Messages */
+.status-message {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--terminal);
+    border: 1px solid var(--primary);
+    border-radius: 5px;
+    padding: 15px 30px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    color: var(--primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 400;
+}
+
+.status-message.show {
+    opacity: 1;
+}
+
+.status-message.error {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.status-message.success {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Scanner Effect */
+.scanner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+    animation: scan 3s linear infinite;
+    z-index: 5;
+    pointer-events: none;
+}
+
+@keyframes scan {
+    from { top: 0; }
+    to { top: 100%; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .central-circle {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .circle-text {
+        font-size: 14px;
+    }
+    
+    .call-visualizer {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .call-number {
+        font-size: 28px;
+    }
+}
