@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SECURE COMMS | ENCRYPTED CHANNEL</title>
+    <title>SECURE COMMS | VOICE CALL</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Matrix Rain Background -->
     <canvas id="matrix-rain"></canvas>
-    
-    <!-- Scanner Effect -->
-    <div class="scanner"></div>
     
     <!-- Main Container -->
     <div class="main-container">
@@ -24,7 +21,7 @@
             </div>
             <div class="terminal-line">
                 <span class="terminal-prompt">root@secure-comms:~$</span>
-                <span class="terminal-text">PEER ID: <span id="peerId" onclick="copyPeerId()" style="cursor: pointer; text-decoration: underline;">GENERATING...</span></span>
+                <span class="terminal-text">PEER ID: <span id="peerId" onclick="copyPeerId()" style="cursor: pointer; color: #00d4ff; text-decoration: underline;">GENERATING...</span></span>
             </div>
             <div class="terminal-line">
                 <span class="terminal-prompt">root@secure-comms:~$</span>
@@ -61,28 +58,40 @@
             <div class="call-timer" id="callTimer">00:00</div>
         </div>
         
-        <div class="call-visualizer">
-            <div class="visualizer-circle"></div>
-            <div class="visualizer-circle"></div>
-            <div class="visualizer-circle"></div>
-            <div class="waveform" id="waveform">
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
+        <!-- Audio Visualizer -->
+        <div class="audio-visualizer">
+            <div class="visualizer-container">
+                <div class="peer-info">
+                    <div class="peer-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="peer-name" id="peerName">CONNECTING...</div>
+                </div>
+                
+                <!-- Audio Level Indicators -->
+                <div class="audio-levels">
+                    <div class="audio-level">
+                        <span>YOUR VOICE</span>
+                        <div class="level-bar">
+                            <div class="level-fill" id="localLevel"></div>
+                        </div>
+                    </div>
+                    <div class="audio-level">
+                        <span>REMOTE VOICE</span>
+                        <div class="level-bar">
+                            <div class="level-fill" id="remoteLevel"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
+        <!-- Call Controls -->
         <div class="call-controls">
-            <button class="call-btn mute" onclick="toggleMute()">
+            <button class="call-btn mute" id="muteBtn" onclick="toggleMute()">
                 <i class="fas fa-microphone"></i>
             </button>
-            <button class="call-btn speaker" onclick="toggleSpeaker()">
+            <button class="call-btn speaker" id="speakerBtn" onclick="toggleSpeaker()">
                 <i class="fas fa-volume-up"></i>
             </button>
             <button class="call-btn end" onclick="endCall()">
@@ -93,26 +102,34 @@
     
     <!-- Incoming Call Notification -->
     <div class="incoming-call" id="incomingCall">
-        <div class="incoming-title">INCOMING TRANSMISSION</div>
-        <div class="incoming-number" id="incomingNumber">PEER ID</div>
+        <div class="incoming-content">
+            <div class="incoming-avatar">
+                <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="incoming-info">
+                <div class="incoming-title">INCOMING CALL</div>
+                <div class="incoming-number" id="incomingNumber">PEER ID</div>
+            </div>
+        </div>
         <div class="incoming-buttons">
-            <button class="incoming-btn accept" onclick="acceptIncomingCall()">ACCEPT</button>
-            <button class="incoming-btn decline" onclick="declineIncomingCall()">DECLINE</button>
+            <button class="incoming-btn accept" onclick="acceptIncomingCall()">
+                <i class="fas fa-phone"></i>
+            </button>
+            <button class="incoming-btn decline" onclick="declineIncomingCall()">
+                <i class="fas fa-phone-slash"></i>
+            </button>
         </div>
     </div>
     
     <!-- Status Message -->
     <div class="status-message" id="statusMessage"></div>
     
-    <!-- Audio Elements - UPDATED with playsinline attribute -->
+    <!-- CRITICAL: Audio Elements for 2-Way Communication -->
     <audio id="localAudio" autoplay muted playsinline></audio>
     <audio id="remoteAudio" autoplay playsinline></audio>
     
-    <!-- Connection Status Indicator -->
-    <div class="connection-indicator" id="connectionIndicator">
-        <div class="indicator-dot" id="indicatorDot"></div>
-        <span id="indicatorText">CONNECTING...</span>
-    </div>
+    <!-- Hidden Audio Test Element -->
+    <audio id="testAudio" preload="auto"></audio>
     
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/app.js"></script>
@@ -120,70 +137,189 @@
     <script src="js/socket.js"></script>
     
     <style>
-        /* Additional styles for connection indicator */
-        .connection-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(15, 20, 25, 0.8);
-            padding: 10px 15px;
-            border-radius: 5px;
-            border: 1px solid var(--primary);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 14px;
-            z-index: 500;
+        /* Additional styles for voice call */
+        .audio-visualizer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            text-align: center;
         }
         
-        .indicator-dot {
-            width: 10px;
-            height: 10px;
+        .visualizer-container {
+            background: rgba(15, 20, 25, 0.9);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+        
+        .peer-info {
+            margin-bottom: 30px;
+        }
+        
+        .peer-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border-radius: 50%;
-            background: var(--warning);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 30px;
+            color: var(--dark);
             animation: pulse 2s infinite;
         }
         
-        .indicator-dot.online {
-            background: var(--primary);
+        .peer-name {
+            color: var(--secondary);
+            font-size: 18px;
+            font-weight: bold;
         }
         
-        .indicator-dot.offline {
+        .audio-levels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .audio-level {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .audio-level span {
+            color: var(--primary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .level-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.1s ease;
+            border-radius: 4px;
+        }
+        
+        .incoming-call {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--terminal);
+            border: 2px solid var(--secondary);
+            border-radius: 20px;
+            padding: 30px;
+            display: none;
+            z-index: 1000;
+            min-width: 350px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            animation: ring 0.5s infinite;
+        }
+        
+        .incoming-call.active {
+            display: block;
+        }
+        
+        .incoming-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .incoming-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--dark);
+        }
+        
+        .incoming-info {
+            flex: 1;
+        }
+        
+        .incoming-title {
+            color: var(--secondary);
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .incoming-number {
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .incoming-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .incoming-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .incoming-btn.accept {
+            background: var(--primary);
+            color: var(--dark);
+        }
+        
+        .incoming-btn.decline {
             background: var(--danger);
+            color: var(--white);
+        }
+        
+        .incoming-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        @keyframes ring {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            25% { transform: translate(-50%, -50%) scale(1.05); }
+            75% { transform: translate(-50%, -50%) scale(1.05); }
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .audio-visualizer {
+                width: 90%;
+            }
+            
+            .visualizer-container {
+                padding: 20px;
+            }
+            
+            .peer-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
         }
     </style>
-    
-    <script>
-        // Copy peer ID function
-        function copyPeerId() {
-            const peerId = document.getElementById('peerId').textContent;
-            if (peerId && peerId !== 'GENERATING...') {
-                navigator.clipboard.writeText(peerId);
-                showStatus('PEER ID COPIED', 'success');
-            }
-        }
-        
-        // Update connection indicator
-        function updateConnectionIndicator(status) {
-            const indicatorDot = document.getElementById('indicatorDot');
-            const indicatorText = document.getElementById('indicatorText');
-            
-            indicatorDot.className = 'indicator-dot';
-            
-            switch(status) {
-                case 'ONLINE':
-                    indicatorDot.classList.add('online');
-                    indicatorText.textContent = 'CONNECTED';
-                    break;
-                case 'OFFLINE':
-                    indicatorDot.classList.add('offline');
-                    indicatorText.textContent = 'DISCONNECTED';
-                    break;
-                default:
-                    indicatorText.textContent = 'CONNECTING...';
-            }
-        }
-    </script>
 </body>
 </html>
